@@ -29,15 +29,15 @@
 					<h5>Step 1: Base url for visualization configuration</h5>
 					<summary>Create the visualization you desire in the explore and paste the full url here</summary>
 					<label for="url-textform"></label>
-					<textarea class="form-control" id="url-textform" style="margin-bottom: 20px" rows="5">
-					</textarea>
+					<textarea class="form-control" id="url-textform" style="margin-bottom: 20px" rows="5"></textarea>
 				</div>
 
 				<div class="col-8" id="hidden">
 					<h5>Step2 (Optional): Customize the fields and totals</h5>
 					<summary>Fields should be fully scoped like &quot;view_name.field_name&quot;</summary>
 					<br>
-
+					<button type="button" value="parseUrl" class="btn btn-primary" onclick="parseURL()">Parse URL</button>
+					<br>
 					<label for="drill-fields">Drill Fields</label>
 	    			<input type="text" class="form-control" id="drill-fields" placeholder="Enter the drill fields, mutiple fields delimited by ," style="margin-bottom: 20px">
 
@@ -95,6 +95,49 @@
 </body>
 
 <script type="text/javascript">
+	function parseURL() {
+		var urltext = document.getElementById('url-textform');
+		var decodedURL = decodeURIComponent(urltext.value);
+
+		// Extract Fields
+		var url = new URL(urltext.value);
+		var fields = url.searchParams.get("fields");
+		document.getElementById('drill-fields').value = fields;
+
+		// Extract Pivot
+		var pivots = url.searchParams.get("pivots");
+		document.getElementById('pivot-fields').value = pivots;
+
+		// Extract First Filter
+		var params = getUrlVars(decodedURL);
+		const keys = Object.keys(params)
+		var hasFilter = false;
+		document.getElementById('filter').value = "";
+		document.getElementById('filter-value').value = "";
+		
+		for (const key of keys) {
+			var value = params[key];
+			console.log(key + "=" + value);
+			if (key.startsWith("f[")) {
+				if (hasFilter) {
+					document.getElementById('filter').value += ",";
+				document.getElementById('filter-value').value += ",";
+				}
+				document.getElementById('filter').value += key;
+				document.getElementById('filter-value').value += value;
+				hasFilter = true;
+			}
+		}
+	}
+
+	function getUrlVars(url) {
+		var vars = {};
+		var parts = url.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+			vars[key] = value;
+		});
+		return vars;
+	}
+
 	function convertURL() {
 		var urltext = document.getElementById('url-textform');
 		var decodedURL = decodeURIComponent(urltext.value);
